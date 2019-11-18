@@ -17,7 +17,7 @@
 import KituraSession
 import SwiftRedis
 import Dispatch
-
+import SSLService
 import Foundation
 
 // MARK RedisStore
@@ -44,6 +44,8 @@ public class RedisStore: Store {
     /// The prefix to be added to the keys of the stored data.
     public var keyPrefix: String
     
+    public var sslConfig: SSLService.Configuration?
+    
     private var redis: Redis
     
     private let semaphore = DispatchSemaphore(value: 1)
@@ -56,19 +58,20 @@ public class RedisStore: Store {
     /// - Parameter ttl: The Time to Live value for the stored entries.
     /// - Parameter db: The number of the Redis database to store the session data in.
     /// - Parameter keyPrefix: The prefix to be added to the keys of the stored data.
-    public init(redisHost: String, redisPort: Int32, redisPassword: String?=nil, ttl: Int = 3600, db: Int = 0, keyPrefix: String = "s:") {
+    public init(redisHost: String, redisPort: Int32, redisPassword: String?=nil, sslConfig: SSLService.Configuration? = nil, ttl: Int = 3600, db: Int = 0, keyPrefix: String = "s:") {
         self.ttl = ttl
         self.db = db
         self.redisHost = redisHost
         self.redisPort = redisPort
         self.redisPassword = redisPassword
         self.keyPrefix = keyPrefix
+        self.sslConfig = sslConfig
         
         redis = Redis()
     }
     
     private func setupRedis(callback: RedisSetupCallback) {
-        redis.connect(host: self.redisHost, port: self.redisPort) { error in
+        redis.connect(host: self.redisHost, port: self.redisPort, sslConfig: self.sslConfig) { error in
             guard error == nil else {
                 callback(RedisStore.createError(errorMessage: "Failed to connect to the Redis server at \(self.redisHost):\(self.redisPort). Error=\(error!.localizedDescription)"))
                 return

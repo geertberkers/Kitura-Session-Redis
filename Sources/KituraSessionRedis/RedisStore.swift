@@ -217,6 +217,22 @@ public class RedisStore: Store {
         )
     }
     
+    /// Ping the session
+    ///
+    /// - Parameter callback: The closure to invoke once the session data is pinged.
+    public func ping(callback: @escaping (NSError?) -> Void) {
+        runWithSemaphore (
+            runClosure: { semCallback in
+                self.redis.ping() { error in
+                    semCallback(nil, error)
+                }
+            },
+            apiCallback: { _, error in
+                callback(error)
+            }
+        )
+    }
+    
     private typealias RunClosure = ((Data?, NSError?) -> Void) -> Void
     private typealias RunWithSemaphoreCallback = (Data?, NSError?) -> Void
     private typealias RedisSetupCallback = (NSError?) -> Void

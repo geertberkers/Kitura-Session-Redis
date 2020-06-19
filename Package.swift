@@ -31,7 +31,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/IBM-Swift/Kitura-Session.git", from: "3.0.0"),
+        .package(url: "https://github.com/geertberkers/Kitura-Session.git", .branch("master")),
         .package(url: "https://github.com/geertberkers/Kitura-redis.git", from: "2.1.3"),
     ],
     

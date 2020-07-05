@@ -143,6 +143,30 @@ public class RedisStore: Store {
         }
     }
     
+    /// Receive the epire time value of an object
+    ///
+    /// - Parameter sessionId: The ID of the session.
+    /// - Parameter callback: The closure to invoke once the session data is fetched.
+    public func expiresIn(sessionId: String, callback: @escaping (TimeInterval? ,NSError?) -> Void) {
+        runWithSemaphore (
+            runClosure: { semCallback in
+                self.redis.ttl(self.keyPrefix + sessionId) { interval, error in
+                    let ttl = interval ?? -1
+                    let data = Data(from: ttl)
+                    semCallback(data, error)
+                }
+            },
+            apiCallback: { data, error in
+                if let interval = data?.to(type: Double.self) {
+                    callback(interval, error)
+                } else {
+                    callback(-1, error)
+                }
+                
+            }
+        )
+    }
+    
     /// Load the session data.
     ///
     /// - Parameter sessionId: The ID of the session.
